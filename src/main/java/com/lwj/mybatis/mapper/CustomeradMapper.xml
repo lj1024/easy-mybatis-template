@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lwj.mybatis.mapper.CustomeradMapper" >
+  <resultMap id="BaseResultMap" type="com.lwj.mybatis.entity.Customerad" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="agent" property="agent" jdbcType="VARCHAR" />
+    <result column="contactor" property="contactor" jdbcType="VARCHAR" />
+    <result column="telephone" property="telephone" jdbcType="VARCHAR" />
+    <result column="month" property="month" jdbcType="VARCHAR" />
+    <result column="customer_name" property="customerName" jdbcType="VARCHAR" />
+    <result column="product" property="product" jdbcType="VARCHAR" />
+    <result column="location" property="location" jdbcType="VARCHAR" />
+    <result column="start_date" property="startDate" jdbcType="TIMESTAMP" />
+    <result column="end_date" property="endDate" jdbcType="TIMESTAMP" />
+    <result column="payment" property="payment" jdbcType="VARCHAR" />
+    <result column="cost" property="cost" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="state" property="state" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="QueryFilter" >
+    <where >
+      <if test="queryId != null" >        and id=#{queryId}      </if>
+      <if test="queryAgent != null" >        and agent=#{queryAgent}      </if>
+      <if test="queryContactor != null" >        and contactor=#{queryContactor}      </if>
+      <if test="queryTelephone != null" >        and telephone=#{queryTelephone}      </if>
+      <if test="queryMonth != null" >        and month=#{queryMonth}      </if>
+      <if test="queryCustomerName != null" >        and customer_name=#{queryCustomerName}      </if>
+      <if test="queryProduct != null" >        and product=#{queryProduct}      </if>
+      <if test="queryLocation != null" >        and location=#{queryLocation}      </if>
+      <if test="queryStartDate != null" >        and start_date=#{queryStartDate}      </if>
+      <if test="queryEndDate != null" >        and end_date=#{queryEndDate}      </if>
+      <if test="queryPayment != null" >        and payment=#{queryPayment}      </if>
+      <if test="queryCost != null" >        and cost=#{queryCost}      </if>
+      <if test="queryRemark != null" >        and remark=#{queryRemark}      </if>
+      <if test="queryCreateDate != null" >        and create_date=#{queryCreateDate}      </if>
+      <if test="queryState != null" >        and state=#{queryState}      </if>
+    </where>
+  </sql>
+  <sql id="SetFilter" >
+    <set >
+      <if test="updateId != null" >        id=#{updateId},      </if>
+      <if test="updateAgent != null" >        agent=#{updateAgent},      </if>
+      <if test="updateContactor != null" >        contactor=#{updateContactor},      </if>
+      <if test="updateTelephone != null" >        telephone=#{updateTelephone},      </if>
+      <if test="updateMonth != null" >        month=#{updateMonth},      </if>
+      <if test="updateCustomerName != null" >        customer_name=#{updateCustomerName},      </if>
+      <if test="updateProduct != null" >        product=#{updateProduct},      </if>
+      <if test="updateLocation != null" >        location=#{updateLocation},      </if>
+      <if test="updateStartDate != null" >        start_date=#{updateStartDate},      </if>
+      <if test="updateEndDate != null" >        end_date=#{updateEndDate},      </if>
+      <if test="updatePayment != null" >        payment=#{updatePayment},      </if>
+      <if test="updateCost != null" >        cost=#{updateCost},      </if>
+      <if test="updateRemark != null" >        remark=#{updateRemark},      </if>
+      <if test="updateCreateDate != null" >        create_date=#{updateCreateDate},      </if>
+      <if test="updateState != null" >        state=#{updateState},      </if>
+    </set>
+  </sql>
+  <insert id="add" parameterType="com.lwj.mybatis.entity.Customerad" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      select nextval('idseq')
+    </selectKey>
+    insert into customerad (id, agent, contactor, 
+      telephone, month, customer_name, 
+      product, location, start_date, 
+      end_date, payment, cost, 
+      remark, create_date, state
+      )
+    values (#{id,jdbcType=BIGINT}, #{agent,jdbcType=VARCHAR}, #{contactor,jdbcType=VARCHAR}, 
+      #{telephone,jdbcType=VARCHAR}, #{month,jdbcType=VARCHAR}, #{customerName,jdbcType=VARCHAR}, 
+      #{product,jdbcType=VARCHAR}, #{location,jdbcType=VARCHAR}, #{startDate,jdbcType=TIMESTAMP}, 
+      #{endDate,jdbcType=TIMESTAMP}, #{payment,jdbcType=VARCHAR}, #{cost,jdbcType=VARCHAR}, 
+      #{remark,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP}, #{state,jdbcType=INTEGER}
+      )
+  </insert>
+  <delete id="delete" parameterType="map" >
+    delete from customerad
+    <include refid="QueryFilter" />
+  </delete>
+  <update id="update" parameterType="map" >
+    update customerad
+    <include refid="SetFilter" />
+    <include refid="QueryFilter" />
+  </update>
+  <select id="read" parameterType="map" resultMap="BaseResultMap" >
+    select * from customerad
+    <include refid="QueryFilter" />
+  </select>
+  <select id="readOne" parameterType="map" resultMap="BaseResultMap" >
+    select * from customerad
+    <include refid="QueryFilter" />
+    <include refid="PUBLIC.OrderFilter" />
+    limit 0,1
+  </select>
+  <select id="query" parameterType="map" resultMap="BaseResultMap" >
+    select * from customerad
+    <include refid="QueryFilter" />
+    <include refid="PUBLIC.OrderFilter" />
+  </select>
+  <select id="count" parameterType="map" resultType="long" >
+    select count(*) from customerad
+    <include refid="QueryFilter" />
+  </select>
+  <select id="page" parameterType="map" resultMap="BaseResultMap" >
+    select * from customerad
+    <include refid="QueryFilter" />
+    <include refid="PUBLIC.OrderFilter" />
+    <include refid="PUBLIC.Mysql" />
+  </select>
+</mapper>

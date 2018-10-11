@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+                           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+       					   http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+       					   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+       					   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+       					   http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+   <context:property-placeholder ignore-resource-not-found="true" ignore-unresolvable="true"
+		location="classpath*:env/*/*.properties" />
+	<context:component-scan base-package="com.lwj.weixin.**.service"></context:component-scan>
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}" />
+
+		<property name="jdbcUrl" value="${jdbc.jdbcUrl}" />
+		<property name="user" value="${jdbc.user}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<tx:annotation-driven />
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage" value="com.lwj.weixin" />
+		<property name="configLocation" value="classpath:mybatis/Configuration.xml"></property>
+	</bean>
+	<!-- 扫描资源 Mybatis的Mapper组件 scan for mappers and let them be autowired -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.lwj.weixin.**.persistence" />
+		<!-- 使用sqlSessionFactoryBeanName 能够避免property-placeholder失效 -->
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+
+	<bean name="memcachedClient"
+		class="net.rubyeye.xmemcached.utils.XMemcachedClientFactoryBean"
+		destroy-method="shutdown">
+		<property name="servers">
+			<value>localhost:11211</value>
+		</property>
+	</bean>
+
+
+
+
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<!-- override these for application-specific URLs if you like: -->
+		<!-- <property name="loginUrl" value="/login.jsp" /> <property name="successUrl" 
+			value="/home.jsp" /> -->
+		<property name="loginUrl" value="/login" />
+		<property name="unauthorizedUrl" value="/unauthorize.jsp" />
+		<!-- The 'filters' property is not necessary since any declared javax.servlet.Filter 
+			bean defined will be automatically acquired and available via its beanName 
+			in chain definitions, but you can perform instance overrides or name aliases 
+			here if you like: -->
+		<!-- <property name="filters"> <util:map> <entry key="anAlias" value-ref="someFilter" 
+			/> </util:map> </property> -->
+		<property name="filterChainDefinitions">
+			<value>
+				/resources/**=anon
+				/login=anon
+				/test.jsp=anon
+				/check/wechatValidate=anon
+				/admin/edit=authc,perms[admin:edit]
+				/admin/manage=authc,perms[admin:manage]
+				/admin/**= authc,roles[admin]
+				/docs/**= authc, perms[document:read]
+				/user/**=authc,roles[user]
+				/customerad/test=authc
+				/** = user
+			</value>
+		</property>
+	</bean>
+	<!-- Define any javax.servlet.Filter beans you want anywhere in this application 
+		context. They will automatically be acquired by the 'shiroFilter' bean above 
+		and made available to the 'filterChainDefinitions' property. Or you can manually/explicitly 
+		add them to the shiroFilter's 'filters' Map if desired. See its JavaDoc for 
+		more details. <bean id="someFilter" class="..." /> <bean id="anotherFilter" 
+		class="..."> </bean> -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<!-- Single realm app. If you have multiple realms, use the 'realms' property 
+			instead. -->
+		<property name="realm" ref="myRealm" />
+		<!-- By default the servlet container sessions will be used. Uncomment 
+			this line to use shiro's native sessions (see the JavaDoc for more): -->
+		<!-- <property name="sessionMode" value="native" /> -->
+	</bean>
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+	<!-- Define the Shiro Realm implementation you want to use to connect to 
+		your back-end security datasource: -->
+	<bean id="myRealm" class="com.lwj.weixin.wxentry.shiro.WXShiroRealm" />
+	<bean
+		class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+		depends-on="lifecycleBeanPostProcessor" />
+	<bean
+		class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager" />
+	</bean>
+</beans>
